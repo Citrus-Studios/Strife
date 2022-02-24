@@ -1,13 +1,16 @@
 use reqwest::header::{CONTENT_TYPE, CONTENT_LENGTH};
-
+use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
 
 pub const DISCORD_API: &'static str = "https://discord.com/api";
 pub const USER_AGENT_VAL: &'static str = "DiscordBot (https://github.com/Citrus-Studios, 0.0.1)";
 
-// Early testing of the discord API
 #[test]
+fn test_api_test_fn() {
+    api_test();
+}
+
+// Early testing of the discord API
 fn api_test() {
-    use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
 
     let bot_token = "OTQ2NDc5Mjg3NzM1ODQwNzk4.YhfThg.2PHNRoLrczYKHYJzdaTK3g82WNs";
 
