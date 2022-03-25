@@ -6,7 +6,7 @@ use async_tungstenite::{tokio::{connect_async, TokioAdapter}, tungstenite::Messa
 use tokio::net::TcpStream;
 use tokio_native_tls::TlsStream;
 
-use crate::{json_data::{BotGateway, Properties}, ops::{op10::Op10, op1::Op1, op11::Op11, op2::{Op2, Op2Data}}, heart_beat};
+use crate::json_related::{ops::{op10::Op10, op1::Op1, op11::Op11, op2::{Op2, Op2Data}}, properties::Properties, bot_gateway::BotGateway};
 
 type StreamType = WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
 
@@ -76,9 +76,10 @@ impl Heartbeat {
                 s: None,
             }).unwrap();
 
+            println!("Sent: {:#?}", heartbeat_data);
             self.send(Message::Text(heartbeat_data)).await;
             let msg: Op11 = from_str(&self.receive().await.to_string()).unwrap();
-            println!("{:#?}", msg);
+            println!("Recieved: {:#?}", msg);
             sleep(Duration::from_millis(op10.d.heartbeat_interval as u64));
         }
     }

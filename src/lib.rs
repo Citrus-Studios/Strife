@@ -3,14 +3,13 @@
 use std::sync::Arc;
 
 use heart_beat::Heartbeat;
-use json_data::BotGateway;
+use json_related::bot_gateway::BotGateway;
 use reqwest::{Client};
 use reqwest::header::{ACCEPT};
 use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
 
 pub mod heart_beat;
-pub mod json_data;
-pub mod ops;
+pub mod json_related;
 
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
 pub const USER_AGENT_VAL: &'static str = "Strife (https://github.com/Citrus-Studios, 0.0.1)";

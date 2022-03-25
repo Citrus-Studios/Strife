@@ -4,7 +4,6 @@ use serde::{Serialize, Deserialize};
 pub struct Op10 {
     op: i32,
     pub d: Op10Data,
-    s: Option<i32>,
 }
 
 
