@@ -14,6 +14,8 @@ pub mod json_related;
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
 pub const USER_AGENT_VAL: &'static str = "Strife (https://github.com/Citrus-Studios, 0.0.1)";
 
+pub type Snowflake = i32;
+
 // Early testing of the discord API
 async fn api_test() {
     let bot_token = "OTQ2NDc5Mjg3NzM1ODQwNzk4.YhfThg.2PHNRoLrczYKHYJzdaTK3g82WNs";
