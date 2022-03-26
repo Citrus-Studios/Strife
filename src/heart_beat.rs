@@ -6,7 +6,7 @@ use async_tungstenite::{tokio::{connect_async, TokioAdapter}, tungstenite::Messa
 use tokio::net::TcpStream;
 use tokio_native_tls::TlsStream;
 
-use crate::json_related::{ops::{op10::Op10, op1::Op1, op11::Op11, op2::{Op2, Op2Data}}, properties::Properties, bot_gateway::BotGateway};
+use strife_types::{ops::{op10::Op10, op1::Op1, op11::Op11, op2::{Op2, Op2Data}}, properties::Properties, bot_gateway::BotGateway};
 
 type StreamType = WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
 
