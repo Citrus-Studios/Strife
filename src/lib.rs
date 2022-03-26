@@ -3,14 +3,13 @@
 use std::sync::Arc;
 
 use heart_beat::Heartbeat;
-use json_related::bot_gateway::BotGateway;
 use reqwest::{Client};
 use reqwest::header::{ACCEPT};
 use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
+use strife_types::bot_gateway::BotGateway;
 use token::bot_token;
 
 pub mod heart_beat;
-pub mod json_related;
 pub mod token;
 
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
