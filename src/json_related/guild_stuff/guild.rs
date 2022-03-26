@@ -23,7 +23,7 @@ pub struct Guild {
     explicit_content_filter: i32,
     roles: Vec<Role>,
     emojis: Vec<Emoji>,
-    features: Vec<Features>,
+    features: Vec<Feature>,
     mfa_level: i32,
     application_id: Option<Snowflake>,
     system_channel_id: Option<Snowflake>,
