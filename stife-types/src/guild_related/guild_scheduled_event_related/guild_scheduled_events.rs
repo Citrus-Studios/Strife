@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Snowflake, Timestamp, json_related::user::User};
+use crate::{Snowflake, Timestamp, user::User};
 
 use super::guild_scheduled_metadata::GuildScheduledMetadata; 
 

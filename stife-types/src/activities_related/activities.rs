@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Snowflake, json_related::guild_related::emojis::Emoji};
+use crate::{Snowflake, guild_related::emojis::Emoji};
 
 use super::{activity_timestamps::ActivityTimestamp, activity_party::Party, activity_assets::Asset, activity_secrets::Secret, activity_buttons::Button};
 

@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::json_related::properties::Properties;
+use crate::properties::Properties;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Op2 {

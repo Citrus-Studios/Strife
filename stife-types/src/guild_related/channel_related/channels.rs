@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Snowflake, json_related::{user::User, guild_related::overwrite::Overwrite}, Timestamp};
+use crate::{Snowflake, {user::User, guild_related::overwrite::Overwrite}, Timestamp};
 
 use super::{thread_metadatas::ThreadMetadata, thread_members::ThreadMember};
 

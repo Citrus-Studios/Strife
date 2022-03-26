@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Snowflake, json_related::user::User};
+use crate::{Snowflake, user::User};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Sticker {
