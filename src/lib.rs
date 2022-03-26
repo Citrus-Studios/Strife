@@ -14,7 +14,8 @@ pub mod json_related;
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
 pub const USER_AGENT_VAL: &'static str = "Strife (https://github.com/Citrus-Studios, 0.0.1)";
 
-pub type Snowflake = i32;
+pub type Snowflake = u64;
+pub type Timestamp = String;
 
 // Early testing of the discord API
 async fn api_test() {
