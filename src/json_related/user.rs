@@ -1,4 +1,6 @@
-use serde::{Deserialize, Serialize}; 
+use serde::{Deserialize, Serialize};
+
+use crate::Snowflake; 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
