@@ -5,6 +5,7 @@ pub mod session_start_limit;
 pub mod user;
 pub mod presences;
 pub mod client_statuses;
+pub mod stage_instances;
 
 pub mod ops;
 pub mod guild_related;
