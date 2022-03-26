@@ -10,3 +10,4 @@ pub mod stage_instances;
 pub mod stickers;
 pub mod voice_states;
 pub mod welcome_screens;
+pub mod role_tags;
