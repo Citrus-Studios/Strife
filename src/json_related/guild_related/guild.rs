@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Snowflake;
+use crate::{Snowflake, json_related::{presences::PresenceUpdate, welcomescreen_related::welcomescreens::WelcomeScreen, stage_instances::StageInstance}};
 
-use super::{roles::Role, emojis::Emoji, features::Feature, voice_states::VoiceState, guild_members::GuildMember}; 
+use super::{roles::Role, emojis::Emoji, features::Feature, voice_states::VoiceState, guild_members::GuildMember, channel_related::channels::Channel, stickers::Sticker, guild_scheduled_event_related::guild_scheduled_events::GuildScheduledEvent}; 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Guild {
     id: Snowflake,
     name: String,
