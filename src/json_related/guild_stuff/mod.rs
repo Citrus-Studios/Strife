@@ -1,1 +1,12 @@
 pub mod guild;
+pub mod channels;
+pub mod emojis;
+pub mod features;
+pub mod guild_members;
+pub mod guild_scheduled_events;
+pub mod presence_updates;
+pub mod roles;
+pub mod stage_instances;
+pub mod stickers;
+pub mod voice_states;
+pub mod welcome_screens;
