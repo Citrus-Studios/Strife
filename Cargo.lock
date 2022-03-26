@@ -846,9 +846,18 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "strife-types",
  "tokio",
  "tokio-native-tls",
  "tokio-stream",
+]
+
+[[package]]
+name = "strife-types"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
