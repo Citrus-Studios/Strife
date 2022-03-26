@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Snowflake; 
+use crate::Snowflake;
+
+use super::{roles::Role, emojis::Emoji, features::Feature, voice_states::VoiceState, guild_members::GuildMember}; 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Guild {

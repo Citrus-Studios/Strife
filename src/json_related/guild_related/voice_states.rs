@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Snowflake;
+use crate::{Snowflake, Timestamp};
 
 use super::guild_members::GuildMember;
 
@@ -18,5 +18,5 @@ pub struct VoiceState {
     self_stream: Option<bool>,
     self_video: Option<bool>,
     suppress: bool,
-    request_to_speak_timestamp: Option<String>
+    request_to_speak_timestamp: Option<Timestamp>
 }

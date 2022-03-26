@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Snowflake, json_related::{user::User, guild_stuff::overwrite::Overwrite}, Timestamp};
+use crate::{Snowflake, json_related::{user::User, guild_related::overwrite::Overwrite}, Timestamp};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Channel {

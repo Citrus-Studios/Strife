@@ -1,5 +1,5 @@
 pub mod guild;
-pub mod channel_stuff;
+pub mod channel_related;
 pub mod emojis;
 pub mod features;
 pub mod guild_members;
