@@ -7,9 +7,11 @@ use json_related::bot_gateway::BotGateway;
 use reqwest::{Client};
 use reqwest::header::{ACCEPT};
 use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
+use token::bot_token;
 
 pub mod heart_beat;
 pub mod json_related;
+pub mod token;
 
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
 pub const USER_AGENT_VAL: &'static str = "Strife (https://github.com/Citrus-Studios, 0.0.1)";
@@ -19,8 +21,6 @@ pub type Timestamp = String;
 
 // Early testing of the discord API
 async fn api_test() {
-    let bot_token = "OTQ2NDc5Mjg3NzM1ODQwNzk4.YhfThg.2PHNRoLrczYKHYJzdaTK3g82WNs";
-
     let client = Arc::new(Client::new());
     let mut headers = HeaderMap::with_capacity(3);
     // Set the user agent header
