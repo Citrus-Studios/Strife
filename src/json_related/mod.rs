@@ -6,3 +6,5 @@ pub mod ready;
 pub mod session_start_limit;
 pub mod user;
 pub mod guild_related;
+pub mod presences;
+pub mod client_statuses;
