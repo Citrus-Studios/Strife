@@ -19,6 +19,7 @@ pub type Snowflake = u64;
 pub type Timestamp = String;
 
 // Early testing of the discord API
+#[allow(dead_code)]
 async fn api_test() {
     let client = Arc::new(Client::new());
     let mut headers = HeaderMap::with_capacity(3);
@@ -38,7 +39,7 @@ async fn api_test() {
     
     let bot_gateway = Arc::new(response.json::<BotGateway>().await.unwrap());
 
-    let mut heartbeat = Heartbeat::new(bot_gateway.clone());
+    let heartbeat = Heartbeat::new(bot_gateway.clone());
     heartbeat.run(bot_token.to_string()).await;
 }
 
