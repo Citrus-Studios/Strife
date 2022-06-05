@@ -21,7 +21,6 @@ pub type Timestamp = String;
 // Early testing of the discord API
 #[allow(dead_code)]
 async fn api_test() {
-    env_logger::init();
     let client = Arc::new(Client::new());
     let mut headers = HeaderMap::with_capacity(3);
     // Set the user agent header
