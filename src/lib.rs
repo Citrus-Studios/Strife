@@ -48,5 +48,6 @@ async fn api_test() {
 
 #[tokio::test]
 async fn test_api_test_fn() {
+    env_logger::builder().is_test(true).try_init().unwrap();
     api_test().await;
 }
