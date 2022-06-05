@@ -8,6 +8,8 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
 use reqwest::Client;
 use strife_types::bot_gateway::BotGateway;
 use token::bot_token;
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 
 pub mod heart_beat;
 pub mod token;
@@ -48,6 +50,11 @@ async fn api_test() {
 
 #[tokio::test]
 async fn test_api_test_fn() {
-    env_logger::builder().is_test(true).try_init().unwrap();
+    // a builder for `FmtSubscriber`.
+    let _ = FmtSubscriber::builder()
+        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
+        // will be written to stdout.
+        .with_max_level(Level::TRACE)
+        .finish();
     api_test().await;
 }

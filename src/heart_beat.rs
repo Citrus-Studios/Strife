@@ -7,7 +7,6 @@ use async_tungstenite::{
     WebSocketStream,
 };
 use futures_util::{SinkExt, StreamExt};
-use log::info;
 use serde_json::{from_str, to_string};
 use tokio::{net::TcpStream, sync::RwLock};
 use tokio_native_tls::TlsStream;
@@ -23,6 +22,7 @@ use strife_types::{
     },
     properties::Properties,
 };
+use tracing::{info, instrument};
 
 type StreamType =
     WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
@@ -44,6 +44,7 @@ impl Heartbeat {
             session_id: None,
         }
     }
+    #[instrument]
     pub async fn run(self, bot_token: String) {
         let arc_self = Arc::new(RwLock::new(self));
 
@@ -108,6 +109,7 @@ impl Heartbeat {
 
         fut.await;
     }
+    #[instrument]
     async fn check_for_update(self_struct: Arc<RwLock<Self>>) {
         loop {
             info!(
@@ -116,6 +118,7 @@ impl Heartbeat {
             );
         }
     }
+    #[instrument]
     async fn heartbeat_loop(self_struct: Arc<RwLock<Self>>, op10: Arc<Op10>) {
         loop {
             let x = self_struct.clone().read().await.seq;
