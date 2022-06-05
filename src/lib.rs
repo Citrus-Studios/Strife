@@ -3,9 +3,9 @@
 use std::sync::Arc;
 
 use heart_beat::Heartbeat;
-use reqwest::{Client};
-use reqwest::header::{ACCEPT};
-use reqwest::header::{HeaderMap, USER_AGENT, HeaderValue, AUTHORIZATION};
+use reqwest::header::ACCEPT;
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
+use reqwest::Client;
 use strife_types::bot_gateway::BotGateway;
 use token::bot_token;
 
@@ -26,7 +26,10 @@ async fn api_test() {
     // Set the user agent header
     headers.insert(USER_AGENT, HeaderValue::from_static(USER_AGENT_VAL));
     // Set the authorization header
-    headers.insert(AUTHORIZATION, HeaderValue::from_str(&format!("Bot {}", bot_token)).unwrap());
+    headers.insert(
+        AUTHORIZATION,
+        HeaderValue::from_str(&format!("Bot {}", bot_token)).unwrap(),
+    );
     // Accept Json
     headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
 
@@ -36,7 +39,7 @@ async fn api_test() {
         .send()
         .await
         .unwrap();
-    
+
     let bot_gateway = Arc::new(response.json::<BotGateway>().await.unwrap());
 
     let heartbeat = Heartbeat::new(bot_gateway.clone());
