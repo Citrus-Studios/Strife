@@ -7,6 +7,7 @@ use async_tungstenite::{
     WebSocketStream,
 };
 use futures_util::{SinkExt, StreamExt};
+use log::info;
 use serde_json::{from_str, to_string};
 use tokio::{net::TcpStream, sync::RwLock};
 use tokio_native_tls::TlsStream;
