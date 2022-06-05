@@ -20,13 +20,12 @@ pub struct Heartbeat {
 
 impl Heartbeat {
     pub fn new(bot_gateway: Arc<BotGateway>) -> Self {
-        let y = Heartbeat {
+        Self {
             bot_gateway,
             seq: -1,
             stream: None,
             session_id: None,
         };
-        y
     }
     pub async fn run(self, bot_token: String) {
         let arc_self = Arc::new(RwLock::new(self));
