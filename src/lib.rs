@@ -8,8 +8,7 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
 use reqwest::Client;
 use strife_types::bot_gateway::BotGateway;
 use token::bot_token;
-use tracing::Level;
-use tracing_subscriber::FmtSubscriber;
+use tracing::info;
 
 pub mod heart_beat;
 pub mod token;
@@ -23,6 +22,7 @@ pub type Timestamp = String;
 // Early testing of the discord API
 #[allow(dead_code)]
 async fn api_test() {
+    info!("this shit even working?!!!");
     let client = Arc::new(Client::new());
     let mut headers = HeaderMap::with_capacity(3);
     // Set the user agent header
@@ -50,11 +50,9 @@ async fn api_test() {
 
 #[tokio::test]
 async fn test_api_test_fn() {
-    // a builder for `FmtSubscriber`.
-    let _ = FmtSubscriber::builder()
-        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
-        // will be written to stdout.
-        .with_max_level(Level::TRACE)
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(tracing::Level::TRACE)
         .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     api_test().await;
 }
