@@ -1,14 +1,30 @@
-use std::{sync::{Arc}, thread::sleep, time::Duration};
+use std::{sync::Arc, thread::sleep, time::Duration};
 
-use futures_util::{StreamExt, SinkExt};
+use async_tungstenite::{
+    stream::Stream,
+    tokio::{connect_async, TokioAdapter},
+    tungstenite::Message,
+    WebSocketStream,
+};
+use futures_util::{SinkExt, StreamExt};
 use serde_json::{from_str, to_string};
-use async_tungstenite::{tokio::{connect_async, TokioAdapter}, tungstenite::Message, WebSocketStream, stream::Stream};
 use tokio::{net::TcpStream, sync::RwLock};
 use tokio_native_tls::TlsStream;
 
-use strife_types::{ops::{op10::Op10, op1::Op1, op11::Op11, op2::{Op2, Op2Data}, op0::Op0}, properties::Properties, bot_gateway::BotGateway};
+use strife_types::{
+    bot_gateway::BotGateway,
+    ops::{
+        op0::Op0,
+        op1::Op1,
+        op10::Op10,
+        op11::Op11,
+        op2::{Op2, Op2Data},
+    },
+    properties::Properties,
+};
 
-type StreamType = WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
+type StreamType =
+    WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
 
 #[derive(Debug)]
 pub struct Heartbeat {
@@ -25,20 +41,27 @@ impl Heartbeat {
             seq: -1,
             stream: None,
             session_id: None,
-        };
+        }
     }
     pub async fn run(self, bot_token: String) {
         let arc_self = Arc::new(RwLock::new(self));
 
-        let url = format!("{}/?v=9&encoding=json", (arc_self.clone().read().await.bot_gateway.clone()).url.as_str());
+        let url = format!(
+            "{}/?v=9&encoding=json",
+            (arc_self.clone().read().await.bot_gateway.clone())
+                .url
+                .as_str()
+        );
 
-        arc_self.clone().write().await.stream = Some(Arc::new(RwLock::new(connect_async(&url)
-            .await
-            .expect("Failed to connect").0)));   
+        arc_self.clone().write().await.stream = Some(Arc::new(RwLock::new(
+            connect_async(&url).await.expect("Failed to connect").0,
+        )));
 
-        
-
-        let first_beat: Op10 = from_str(&format!("{}",Self::receive(arc_self.clone()).await.to_string())).unwrap();
+        let first_beat: Op10 = from_str(&format!(
+            "{}",
+            Self::receive(arc_self.clone()).await.to_string()
+        ))
+        .unwrap();
         println!("First Beat: {:#?}", first_beat.clone());
 
         let first_beat = Arc::new(first_beat);
@@ -64,8 +87,9 @@ impl Heartbeat {
                 shards: None,
                 intents: 0,
             }),
-        }).unwrap();
-        
+        })
+        .unwrap();
+
         println!("Identity Sent: {}", identity);
         Self::send(arc_self.clone(), Message::text(identity)).await;
         let response = Self::receive(arc_self.clone()).await;
@@ -91,21 +115,49 @@ impl Heartbeat {
                 d: None,
                 s: match x {
                     -1 => None,
-                    _ => Some(x)
+                    _ => Some(x),
                 },
-            }).unwrap();
+            })
+            .unwrap();
 
             println!("HeartBeatLoop Sent: {}", heartbeat_data);
             Self::send(self_struct.clone(), Message::Text(heartbeat_data)).await;
-            let msg: Op11 = from_str(Self::receive(self_struct.clone()).await.to_string().as_str()).unwrap();
+            let msg: Op11 = from_str(
+                Self::receive(self_struct.clone())
+                    .await
+                    .to_string()
+                    .as_str(),
+            )
+            .unwrap();
             println!("HeartBeatLoop Recieved: {:#?}", msg);
             sleep(Duration::from_millis(op10.d.heartbeat_interval as u64));
         }
     }
     async fn send(self_struct: Arc<RwLock<Self>>, message: Message) {
-        self_struct.write().await.stream.clone().unwrap().write().await.send(message).await.unwrap();
+        self_struct
+            .write()
+            .await
+            .stream
+            .clone()
+            .unwrap()
+            .write()
+            .await
+            .send(message)
+            .await
+            .unwrap();
     }
     async fn receive(self_struct: Arc<RwLock<Self>>) -> Message {
-        self_struct.write().await.stream.clone().unwrap().write().await.next().await.unwrap().unwrap()
+        self_struct
+            .write()
+            .await
+            .stream
+            .clone()
+            .unwrap()
+            .write()
+            .await
+            .next()
+            .await
+            .unwrap()
+            .unwrap()
     }
 }
