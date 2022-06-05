@@ -62,7 +62,7 @@ impl Heartbeat {
             Self::receive(arc_self.clone()).await.to_string()
         ))
         .unwrap();
-        println!("First Beat: {:#?}", first_beat.clone());
+        info!("First Beat: {:#?}", first_beat.clone());
 
         let first_beat = Arc::new(first_beat);
 
@@ -85,12 +85,12 @@ impl Heartbeat {
                 compress: None,
                 large_threshold: None,
                 shards: None,
-                intents: 0,
+                intents: 1 << 9,
             }),
         })
         .unwrap();
 
-        println!("Identity Sent: {}", identity);
+        info!("Identity Sent: {}", identity);
         Self::send(arc_self.clone(), Message::text(identity)).await;
         let response = Self::receive(arc_self.clone()).await;
 
@@ -98,15 +98,23 @@ impl Heartbeat {
             panic!("Disallowed Intents");
         }
 
-        println!("Identity Recieved: {}", response.to_string());
+        info!("Identity Recieved: {}", response.to_string());
         let response = from_str::<Op0>(response.to_string().as_str()).unwrap();
-        println!("Identity Recieved: {:#?}", response);
+        info!("Identity Recieved: {:#?}", response);
 
         arc_self.clone().write().await.seq = response.s;
+        let _ = Self::check_for_update(arc_self);
 
         fut.await;
     }
-
+    async fn check_for_update(self_struct: Arc<RwLock<Self>>) {
+        loop {
+            info!(
+                "{:#?}",
+                Self::receive(self_struct.clone()).await.to_string()
+            );
+        }
+    }
     async fn heartbeat_loop(self_struct: Arc<RwLock<Self>>, op10: Arc<Op10>) {
         loop {
             let x = self_struct.clone().read().await.seq;
@@ -120,7 +128,7 @@ impl Heartbeat {
             })
             .unwrap();
 
-            println!("HeartBeatLoop Sent: {}", heartbeat_data);
+            info!("HeartBeatLoop Sent: {}", heartbeat_data);
             Self::send(self_struct.clone(), Message::Text(heartbeat_data)).await;
             let msg: Op11 = from_str(
                 Self::receive(self_struct.clone())
@@ -129,7 +137,7 @@ impl Heartbeat {
                     .as_str(),
             )
             .unwrap();
-            println!("HeartBeatLoop Recieved: {:#?}", msg);
+            info!("HeartBeatLoop Recieved: {:#?}", msg);
             sleep(Duration::from_millis(op10.d.heartbeat_interval as u64));
         }
     }
