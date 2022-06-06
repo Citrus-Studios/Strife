@@ -36,6 +36,7 @@ pub struct Heartbeat {
 }
 
 impl Heartbeat {
+    #[instrument(skip_all)]
     pub fn new(bot_gateway: Arc<BotGateway>) -> Self {
         Self {
             bot_gateway,
@@ -44,7 +45,7 @@ impl Heartbeat {
             session_id: None,
         }
     }
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn run(self, bot_token: String) {
         let arc_self = Arc::new(RwLock::new(self));
 
@@ -109,7 +110,7 @@ impl Heartbeat {
 
         fut.await;
     }
-    #[instrument]
+    #[instrument(skip_all)]
     async fn check_for_update(self_struct: Arc<RwLock<Self>>) {
         loop {
             info!(
@@ -118,7 +119,7 @@ impl Heartbeat {
             );
         }
     }
-    #[instrument]
+    #[instrument(skip_all)]
     async fn heartbeat_loop(self_struct: Arc<RwLock<Self>>, op10: Arc<Op10>) {
         loop {
             let x = self_struct.clone().read().await.seq;
@@ -145,6 +146,7 @@ impl Heartbeat {
             sleep(Duration::from_millis(op10.d.heartbeat_interval as u64));
         }
     }
+    #[instrument(skip_all)]
     async fn send(self_struct: Arc<RwLock<Self>>, message: Message) {
         self_struct
             .write()
@@ -158,6 +160,7 @@ impl Heartbeat {
             .await
             .unwrap();
     }
+    #[instrument(skip_all)]
     async fn receive(self_struct: Arc<RwLock<Self>>) -> Message {
         self_struct
             .write()
