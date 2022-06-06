@@ -8,7 +8,7 @@ use async_tungstenite::{
 };
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{from_str, to_string};
-use tokio::{net::TcpStream, sync::RwLock};
+use tokio::{net::TcpStream, spawn, sync::RwLock};
 use tokio_native_tls::TlsStream;
 
 use strife_types::{
@@ -69,8 +69,6 @@ impl Heartbeat {
 
         let first_beat = Arc::new(first_beat);
 
-        let fut = Self::heartbeat_loop(arc_self.clone(), first_beat);
-
         let identity = to_string(&Op2 {
             op: 2,
             d: Some(Op2Data {
@@ -106,17 +104,27 @@ impl Heartbeat {
         info!("Identity Recieved: {:#?}", response);
 
         arc_self.clone().write().await.seq = response.s;
-        let _ = Self::check_for_update(arc_self);
 
-        fut.await;
+        let heart_beat_clone = arc_self.clone();
+        let handle1 = spawn(async move {
+            Self::heartbeat_loop(heart_beat_clone, first_beat).await;
+        });
+        let check_for_update_clone = arc_self.clone();
+        let handle2 = spawn(async move {
+            Self::check_for_update(check_for_update_clone).await;
+        });
+        handle1.await.unwrap();
+        handle2.await.unwrap();
     }
     #[instrument(skip_all)]
     async fn check_for_update(self_struct: Arc<RwLock<Self>>) {
+        info!("Check For Update ran?");
         loop {
             info!(
                 "{:#?}",
                 Self::receive(self_struct.clone()).await.to_string()
             );
+            sleep(Duration::from_secs(1))
         }
     }
     #[instrument(skip_all)]
