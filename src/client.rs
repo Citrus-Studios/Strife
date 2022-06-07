@@ -28,14 +28,14 @@ type StreamType =
     WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
 
 #[derive(Debug)]
-pub struct Heartbeat {
+pub struct Client {
     bot_gateway: Arc<BotGateway>,
     seq: i32,
     stream: Option<Arc<RwLock<StreamType>>>,
     session_id: Option<String>,
 }
 
-impl Heartbeat {
+impl Client {
     #[instrument(skip_all)]
     pub fn new(bot_gateway: Arc<BotGateway>) -> Self {
         Self {

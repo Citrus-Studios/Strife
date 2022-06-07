@@ -2,15 +2,15 @@
 
 use std::sync::Arc;
 
-use heart_beat::Heartbeat;
+use client::Client;
 use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
-use reqwest::Client;
+use reqwest::Client as ReqwestClient;
 use strife_types::bot_gateway::BotGateway;
 use token::bot_token;
 use tracing::info;
 
-pub mod heart_beat;
+pub mod client;
 pub mod token;
 
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
@@ -23,7 +23,7 @@ pub type Timestamp = String;
 #[allow(dead_code)]
 async fn api_test() {
     info!("this shit even working?!!!");
-    let client = Arc::new(Client::new());
+    let client = Arc::new(ReqwestClient::new());
     let mut headers = HeaderMap::with_capacity(3);
     // Set the user agent header
     headers.insert(USER_AGENT, HeaderValue::from_static(USER_AGENT_VAL));
@@ -44,7 +44,7 @@ async fn api_test() {
 
     let bot_gateway = Arc::new(response.json::<BotGateway>().await.unwrap());
 
-    let heartbeat = Heartbeat::new(bot_gateway.clone());
+    let heartbeat = Client::new(bot_gateway.clone());
     heartbeat.run(bot_token.to_string()).await;
 }
 
