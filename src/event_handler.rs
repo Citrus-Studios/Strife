@@ -4,6 +4,13 @@ use tokio::sync::RwLock;
 
 #[derive(Default)]
 pub struct EventHandler<T> {
-    lock_status: bool,
     data: Arc<RwLock<T>>,
+}
+
+impl<T> EventHandler<T> {
+    pub fn new(data: T) -> Self {
+        Self {
+            data: Arc::new(RwLock::new(data)),
+        }
+    }
 }
