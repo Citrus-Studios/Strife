@@ -24,6 +24,8 @@ use strife_types::{
 };
 use tracing::{info, instrument};
 
+use crate::event_handler::EventHandler;
+
 type StreamType =
     WebSocketStream<Stream<TokioAdapter<TcpStream>, TokioAdapter<TlsStream<TcpStream>>>>;
 
@@ -31,7 +33,7 @@ type StreamType =
 pub struct Client {
     bot_gateway: Arc<BotGateway>,
     seq: i32,
-    stream: Option<Arc<RwLock<StreamType>>>,
+    event_handler: Option<EventHandler<Arc<RwLock<StreamType>>>>,
     session_id: Option<String>,
 }
 
