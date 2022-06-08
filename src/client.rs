@@ -1,4 +1,4 @@
-use std::{sync::Arc, thread::sleep, time::Duration};
+use std::{collections::HashMap, sync::Arc, thread::sleep, time::Duration};
 
 use async_tungstenite::{
     stream::Stream,
@@ -30,6 +30,8 @@ type StreamType =
 pub struct Client {
     bot_gateway: Arc<BotGateway>,
     seq: i32,
+    events: HashMap<String, Message>,
+    stream: Option<Arc<RwLock<StreamType>>>,
     session_id: Option<String>,
 }
 
@@ -39,27 +41,19 @@ impl Client {
         Self {
             bot_gateway,
             seq: -1,
+            events: HashMap::new(),
+            stream: None,
             session_id: None,
         }
     }
     #[instrument(skip_all)]
-    pub async fn run(self, bot_token: String) {
-        let arc_self = Arc::new(RwLock::new(self));
-
-        let url = format!(
-            "{}/?v=9&encoding=json",
-            (arc_self.clone().read().await.bot_gateway.clone())
-                .url
-                .as_str()
-        );
-
-        arc_self.clone().write().await.stream = Some(Arc::new(RwLock::new(
-            connect_async(&url).await.expect("Failed to connect").0,
-        )));
-
+    pub(crate) async fn initial_handshake(
+        self_struct: Arc<RwLock<Self>>,
+        bot_token: String,
+    ) -> Arc<Op10> {
         let first_beat: Op10 = from_str(&format!(
             "{}",
-            Self::receive(arc_self.clone()).await.to_string()
+            Self::receive(self_struct.clone()).await.to_string()
         ))
         .unwrap();
         info!("First Beat: {:#?}", first_beat.clone());
@@ -89,8 +83,8 @@ impl Client {
         .unwrap();
 
         info!("Identity Sent: {}", identity);
-        Self::send(arc_self.clone(), Message::text(identity)).await;
-        let response = Self::receive(arc_self.clone()).await;
+        Self::send(self_struct.clone(), Message::text(identity)).await;
+        let response = Self::receive(self_struct.clone()).await;
 
         if response.to_string() == "Disallowed intent(s)." {
             panic!("Disallowed Intents");
@@ -100,13 +94,31 @@ impl Client {
         let response = from_str::<Op0>(response.to_string().as_str()).unwrap();
         info!("Identity Recieved: {:#?}", response);
 
-        arc_self.clone().write().await.seq = response.s;
+        self_struct.clone().write().await.seq = response.s;
+        return first_beat;
+    }
+    #[instrument(skip_all)]
+    pub(crate) async fn run(self, bot_token: String) {
+        let self_struct = Arc::new(RwLock::new(self));
 
-        let heart_beat_clone = arc_self.clone();
+        let url = format!(
+            "{}/?v=9&encoding=json",
+            (self_struct.clone().read().await.bot_gateway.clone())
+                .url
+                .as_str()
+        );
+
+        self_struct.clone().write().await.stream = Some(Arc::new(RwLock::new(
+            connect_async(&url).await.expect("Failed to connect").0,
+        )));
+
+        let first_beat = Self::initial_handshake(self_struct.clone(), bot_token).await;
+
+        let heart_beat_clone = self_struct.clone();
         let handle1 = spawn(async move {
             Self::heartbeat_loop(heart_beat_clone, first_beat).await;
         });
-        let check_for_update_clone = arc_self.clone();
+        let check_for_update_clone = self_struct.clone();
         let handle2 = spawn(async move {
             Self::check_for_update(check_for_update_clone).await;
         });
