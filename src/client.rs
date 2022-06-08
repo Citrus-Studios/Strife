@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc, thread::sleep, time::Duration};
+use std::{sync::Arc, thread::sleep, time::Duration};
 
 use async_tungstenite::{
     stream::Stream,
@@ -30,7 +30,6 @@ type StreamType =
 pub struct Client {
     bot_gateway: Arc<BotGateway>,
     seq: i32,
-    events: HashMap<String, Message>,
     stream: Option<Arc<RwLock<StreamType>>>,
     session_id: Option<String>,
 }
@@ -41,7 +40,6 @@ impl Client {
         Self {
             bot_gateway,
             seq: -1,
-            events: HashMap::new(),
             stream: None,
             session_id: None,
         }
