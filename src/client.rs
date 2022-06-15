@@ -45,57 +45,6 @@ impl Client {
         }
     }
     #[instrument(skip_all)]
-    pub(crate) async fn initial_handshake(
-        self_struct: Arc<RwLock<Self>>,
-        bot_token: String,
-    ) -> Arc<Op10> {
-        let first_beat: Op10 = from_str(&format!(
-            "{}",
-            Self::receive(self_struct.clone()).await.to_string()
-        ))
-        .unwrap();
-        info!("First Beat: {:#?}", first_beat.clone());
-
-        let first_beat = Arc::new(first_beat);
-
-        let identity = to_string(&Op2 {
-            op: 2,
-            d: Some(Op2Data {
-                token: bot_token,
-                properties: Properties {
-                    #[cfg(windows)]
-                    os: "windows".to_string(),
-                    #[cfg(target_os = "macos")]
-                    os: "macos".to_string(),
-                    #[cfg(target_os = "linux")]
-                    os: "linux".to_string(),
-                    browser: "Strife".to_string(),
-                    device: "Strife".to_string(),
-                },
-                compress: None,
-                large_threshold: None,
-                shards: None,
-                intents: 1 << 9,
-            }),
-        })
-        .unwrap();
-
-        info!("Identity Sent: {}", identity);
-        Self::send(self_struct.clone(), Message::text(identity)).await;
-        let response = Self::receive(self_struct.clone()).await;
-
-        if response.to_string() == "Disallowed intent(s)." {
-            panic!("Disallowed Intents");
-        }
-
-        info!("Identity Recieved: {}", response.to_string());
-        let response = from_str::<Op0>(response.to_string().as_str()).unwrap();
-        info!("Identity Recieved: {:#?}", response);
-
-        self_struct.clone().write().await.seq = response.s;
-        return first_beat;
-    }
-    #[instrument(skip_all)]
     pub(crate) async fn run(self, bot_token: String) {
         let self_struct = Arc::new(RwLock::new(self));
 
@@ -189,5 +138,56 @@ impl Client {
             .await
             .unwrap()
             .unwrap()
+    }
+    #[instrument(skip_all)]
+    pub(crate) async fn initial_handshake(
+        self_struct: Arc<RwLock<Self>>,
+        bot_token: String,
+    ) -> Arc<Op10> {
+        let first_beat: Op10 = from_str(&format!(
+            "{}",
+            Self::receive(self_struct.clone()).await.to_string()
+        ))
+        .unwrap();
+        info!("First Beat: {:#?}", first_beat.clone());
+
+        let first_beat = Arc::new(first_beat);
+
+        let identity = to_string(&Op2 {
+            op: 2,
+            d: Some(Op2Data {
+                token: bot_token,
+                properties: Properties {
+                    #[cfg(windows)]
+                    os: "windows".to_string(),
+                    #[cfg(target_os = "macos")]
+                    os: "macos".to_string(),
+                    #[cfg(target_os = "linux")]
+                    os: "linux".to_string(),
+                    browser: "Strife".to_string(),
+                    device: "Strife".to_string(),
+                },
+                compress: None,
+                large_threshold: None,
+                shards: None,
+                intents: 1 << 9,
+            }),
+        })
+        .unwrap();
+
+        info!("Identity Sent: {}", identity);
+        Self::send(self_struct.clone(), Message::text(identity)).await;
+        let response = Self::receive(self_struct.clone()).await;
+
+        if response.to_string() == "Disallowed intent(s)." {
+            panic!("Disallowed Intents");
+        }
+
+        info!("Identity Recieved: {}", response.to_string());
+        let response = from_str::<Op0>(response.to_string().as_str()).unwrap();
+        info!("Identity Recieved: {:#?}", response);
+
+        self_struct.clone().write().await.seq = response.s;
+        return first_beat;
     }
 }
