@@ -16,7 +16,7 @@ pub(crate) async fn check_for_update(self_struct: Arc<RwLock<EventManager>>) {
             "{:#?}",
             EventManager::request_event(self_struct.clone(), "check_for_update").await
         );
-        sleep(Duration::from_secs(1)).await;
+        sleep(Duration::from_millis(500)).await;
     }
 }
 
