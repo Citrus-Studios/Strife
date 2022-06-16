@@ -39,6 +39,14 @@ impl EventManager {
     pub(crate) async fn run(self_struct: Arc<RwLock<Self>>, bot_token: String) {
         let first_beat = Self::initial_handshake(self_struct.clone(), bot_token.to_string()).await;
 
+        let mut locked = self_struct.write().await;
+        locked
+            .requests
+            .insert(String::from("heartbeat_loop"), (String::from(""), false));
+        locked
+            .requests
+            .insert(String::from("check_for_update"), (String::from(""), false));
+
         let heart_beat_clone = self_struct.clone();
         let handle1 = spawn(async move {
             heartbeat_loop(heart_beat_clone, first_beat).await;
@@ -57,15 +65,7 @@ impl EventManager {
     }
     pub(crate) async fn event_loop(self_struct: Arc<RwLock<Self>>) {
         info!("Event Loop Started");
-        let mut locked = self_struct.write().await;
-        locked
-            .requests
-            .insert(String::from("heartbeat_loop"), (String::from(""), false))
-            .unwrap();
-        locked
-            .requests
-            .insert(String::from("check_for_update"), (String::from(""), false))
-            .unwrap();
+
         loop {
             let event = EventManager::receive(self_struct.clone()).await;
             info!("Received Event: {:#?}", event);
@@ -75,29 +75,29 @@ impl EventManager {
     #[instrument(skip_all)]
     pub(crate) async fn request_event(self_struct: Arc<RwLock<Self>>, value: &str) -> String {
         while self_struct
-            .write()
+            .clone()
+            .read()
             .await
             .requests
-            .get_key_value(&value.to_string())
+            .get(&value.to_string())
             .unwrap()
             .1
-             .1
             == false
         {}
         return self_struct
-            .write()
+            .clone()
+            .read()
             .await
             .requests
-            .get_key_value(&value.to_string())
+            .get(&value.to_string())
             .unwrap()
-            .1
-             .0
+            .0
             .clone();
     }
     #[instrument(skip_all)]
     pub(crate) async fn send(self_struct: Arc<RwLock<Self>>, message: Message) {
         self_struct
-            .write()
+            .read()
             .await
             .stream
             .clone()
@@ -110,7 +110,7 @@ impl EventManager {
     #[instrument(skip_all)]
     pub(crate) async fn receive(self_struct: Arc<RwLock<Self>>) -> Message {
         self_struct
-            .write()
+            .read()
             .await
             .stream
             .clone()
@@ -131,7 +131,7 @@ impl EventManager {
             Self::receive(self_struct.clone()).await.to_string()
         ))
         .unwrap();
-        info!("First Beat: {:#?}", first_beat.clone());
+        info!("First Beat");
 
         let first_beat = Arc::new(first_beat);
 
@@ -157,7 +157,7 @@ impl EventManager {
         })
         .unwrap();
 
-        info!("Identity Sent: {}", identity);
+        info!("Identity Sent");
         Self::send(self_struct.clone(), Message::text(identity)).await;
         let response = Self::receive(self_struct.clone()).await;
 
@@ -165,9 +165,9 @@ impl EventManager {
             panic!("Disallowed Intents");
         }
 
-        info!("Identity Recieved: {}", response.to_string());
+        info!("Identity Recieved");
         let response = from_str::<Op0>(response.to_string().as_str()).unwrap();
-        info!("Identity Recieved: {:#?}", response);
+        info!("Identity Recieved");
 
         self_struct.clone().write().await.seq = response.s;
         return first_beat;
