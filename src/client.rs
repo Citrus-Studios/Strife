@@ -18,16 +18,12 @@ pub type StreamType =
 
 pub struct Client {
     bot_gateway: Arc<BotGateway>,
-    stream: Option<Arc<RwLock<StreamType>>>,
 }
 
 impl Client {
     #[instrument(skip_all)]
     pub fn new(bot_gateway: Arc<BotGateway>) -> Self {
-        Self {
-            bot_gateway,
-            stream: None,
-        }
+        Self { bot_gateway }
     }
     #[instrument(skip_all)]
     pub(crate) async fn run(self, bot_token: String) {
@@ -40,11 +36,11 @@ impl Client {
                 .as_str()
         );
 
-        self_struct.clone().write().await.stream = Some(Arc::new(RwLock::new(
+        let x = Some(Arc::new(RwLock::new(
             connect_async(&url).await.expect("Failed to connect").0,
         )));
 
-        let first_beat =
-            EventManager::initial_handshake(EventManager::new().await, bot_token).await;
+        let event_manager = EventManager::new(x.unwrap()).await;
+        EventManager::run(event_manager, bot_token).await;
     }
 }

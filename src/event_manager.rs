@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use async_tungstenite::tungstenite::Message;
 use futures_util::SinkExt;
@@ -11,24 +11,49 @@ use strife_types::{
     },
     properties::Properties,
 };
-use tokio::sync::RwLock;
+use tokio::{spawn, sync::RwLock};
 use tokio_stream::StreamExt;
 use tracing::{info, instrument};
 
-use crate::client::StreamType;
+use crate::{
+    client::StreamType,
+    events::{check_for_update, heartbeat_loop},
+};
 
 pub(crate) struct EventManager {
-    pub(crate) stream: Option<Arc<RwLock<StreamType>>>,
+    pub(crate) stream: Arc<RwLock<StreamType>>,
     pub(crate) seq: i32,
+    pub(crate) requests: HashMap<String, String>,
 }
 
 impl EventManager {
     #[instrument(skip_all)]
-    pub(crate) async fn new() -> Arc<RwLock<Self>> {
+    pub(crate) async fn new(stream: Arc<RwLock<StreamType>>) -> Arc<RwLock<Self>> {
         Arc::new(RwLock::new(Self {
-            stream: None,
+            stream,
             seq: -1,
+            requests: HashMap::new(),
         }))
+    }
+    #[instrument(skip_all)]
+    pub(crate) async fn run(self_struct: Arc<RwLock<Self>>, bot_token: String) {
+        let first_beat = Self::initial_handshake(self_struct.clone(), bot_token.to_string()).await;
+
+        let heart_beat_clone = self_struct.clone();
+        let handle1 = spawn(async move {
+            heartbeat_loop(heart_beat_clone, first_beat).await;
+        });
+        let check_for_update_clone = self_struct.clone();
+        let handle2 = spawn(async move {
+            check_for_update(check_for_update_clone).await;
+        });
+        handle1.await.unwrap();
+        handle2.await.unwrap();
+    }
+
+    #[instrument(skip_all)]
+    pub(crate) async fn request_event(self_struct: Arc<RwLock<Self>>, value: &str) -> String {
+        todo!();
     }
     #[instrument(skip_all)]
     pub(crate) async fn send(self_struct: Arc<RwLock<Self>>, message: Message) {
@@ -37,7 +62,6 @@ impl EventManager {
             .await
             .stream
             .clone()
-            .unwrap()
             .write()
             .await
             .send(message)
@@ -51,7 +75,6 @@ impl EventManager {
             .await
             .stream
             .clone()
-            .unwrap()
             .write()
             .await
             .next()

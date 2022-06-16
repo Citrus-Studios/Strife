@@ -9,19 +9,19 @@ use tracing::{info, instrument};
 use crate::event_manager::EventManager;
 
 #[instrument(skip_all)]
-async fn check_for_update(self_struct: Arc<RwLock<EventManager>>) {
+pub(crate) async fn check_for_update(self_struct: Arc<RwLock<EventManager>>) {
     info!("Check For Update ran?");
     loop {
         info!(
             "{:#?}",
-            EventManager::receive(self_struct.clone()).await.to_string()
+            EventManager::request_event(self_struct.clone(), "check_for_update").await
         );
-        sleep(Duration::from_secs(1));
+        sleep(Duration::from_secs(1)).await;
     }
 }
 
 #[instrument(skip_all)]
-async fn heartbeat_loop(self_struct: Arc<RwLock<EventManager>>, op10: Arc<Op10>) {
+pub(crate) async fn heartbeat_loop(self_struct: Arc<RwLock<EventManager>>, op10: Arc<Op10>) {
     loop {
         let x = self_struct.clone().read().await.seq;
         let heartbeat_data = to_string(&Op1 {
@@ -37,13 +37,12 @@ async fn heartbeat_loop(self_struct: Arc<RwLock<EventManager>>, op10: Arc<Op10>)
         info!("HeartBeatLoop Sent: {}", heartbeat_data);
         EventManager::send(self_struct.clone(), Message::Text(heartbeat_data)).await;
         let msg: Op11 = from_str(
-            EventManager::receive(self_struct.clone())
+            EventManager::request_event(self_struct.clone(), "heartbeat")
                 .await
-                .to_string()
                 .as_str(),
         )
         .unwrap();
         info!("HeartBeatLoop Recieved: {:#?}", msg);
-        sleep(Duration::from_millis(op10.d.heartbeat_interval as u64));
+        sleep(Duration::from_millis(op10.d.heartbeat_interval as u64)).await;
     }
 }
