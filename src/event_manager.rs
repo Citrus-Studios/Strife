@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_tungstenite::tungstenite::Message;
 use futures_util::SinkExt;
@@ -11,7 +11,7 @@ use strife_types::{
     },
     properties::Properties,
 };
-use tokio::{spawn, sync::RwLock};
+use tokio::{spawn, sync::RwLock, time::sleep};
 use tokio_stream::StreamExt;
 use tracing::{info, instrument};
 
@@ -23,7 +23,7 @@ use crate::{
 pub(crate) struct EventManager {
     pub(crate) stream: Arc<RwLock<StreamType>>,
     pub(crate) seq: i32,
-    pub(crate) requests: HashMap<String, String>,
+    pub(crate) requests: HashMap<String, (String, bool)>,
 }
 
 impl EventManager {
@@ -47,13 +47,52 @@ impl EventManager {
         let handle2 = spawn(async move {
             check_for_update(check_for_update_clone).await;
         });
+        let event_loop_clone = self_struct.clone();
+        let handle3 = spawn(async move {
+            Self::event_loop(event_loop_clone).await;
+        });
         handle1.await.unwrap();
         handle2.await.unwrap();
+        handle3.await.unwrap();
     }
-
+    pub(crate) async fn event_loop(self_struct: Arc<RwLock<Self>>) {
+        info!("Event Loop Started");
+        let mut locked = self_struct.write().await;
+        locked
+            .requests
+            .insert(String::from("heartbeat_loop"), (String::from(""), false))
+            .unwrap();
+        locked
+            .requests
+            .insert(String::from("check_for_update"), (String::from(""), false))
+            .unwrap();
+        loop {
+            let event = EventManager::receive(self_struct.clone()).await;
+            info!("Received Event: {:#?}", event);
+            sleep(Duration::from_secs(1)).await;
+        }
+    }
     #[instrument(skip_all)]
     pub(crate) async fn request_event(self_struct: Arc<RwLock<Self>>, value: &str) -> String {
-        todo!();
+        while self_struct
+            .write()
+            .await
+            .requests
+            .get_key_value(&value.to_string())
+            .unwrap()
+            .1
+             .1
+            == false
+        {}
+        return self_struct
+            .write()
+            .await
+            .requests
+            .get_key_value(&value.to_string())
+            .unwrap()
+            .1
+             .0
+            .clone();
     }
     #[instrument(skip_all)]
     pub(crate) async fn send(self_struct: Arc<RwLock<Self>>, message: Message) {
