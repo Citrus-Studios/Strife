@@ -11,6 +11,8 @@ use token::bot_token;
 use tracing::info;
 
 pub mod client;
+pub mod event_manager;
+pub mod events;
 pub mod token;
 
 pub const DISCORD_API: &'static str = "https://discord.com/api/v9";
