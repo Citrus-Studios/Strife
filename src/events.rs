@@ -37,7 +37,7 @@ pub(crate) async fn heartbeat_loop(self_struct: Arc<RwLock<EventManager>>, op10:
         info!("HeartBeatLoop Sent: {}", heartbeat_data);
         EventManager::send(self_struct.clone(), Message::Text(heartbeat_data)).await;
         let msg: Op11 = from_str(
-            EventManager::request_event(self_struct.clone(), "heartbeat")
+            EventManager::request_event(self_struct.clone(), "heartbeat_loop")
                 .await
                 .as_str(),
         )
