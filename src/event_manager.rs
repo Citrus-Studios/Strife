@@ -126,10 +126,12 @@ impl EventManager {
         self_struct: Arc<RwLock<Self>>,
         bot_token: String,
     ) -> Arc<Op10> {
-        let first_beat: Op10 = from_str(&format!(
-            "{}",
-            Self::receive(self_struct.clone()).await.to_string()
-        ))
+        let first_beat: Op10 = from_str(
+            Self::receive(self_struct.clone())
+                .await
+                .to_string()
+                .as_str(),
+        )
         .unwrap();
         info!("First Beat");
 
